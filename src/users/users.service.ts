@@ -18,7 +18,12 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<UsersDocument> {
-    const createUser = await new this.usersModel(createUserDto);
+    const newUser = {
+      "username": createUserDto.username,
+      "token": createUserDto.token,
+      "points": "0"
+    };
+    const createUser = await new this.usersModel(newUser);
     return createUser.save();
   }
 
@@ -27,10 +32,7 @@ export class UsersService {
     try {
       user = await this.usersModel.findById(id);
     } catch (error) {
-      throw new NotFoundException("L'utilisateur ne peut pas être trouvé")
-    }
-    if (!user) {
-      throw new NotFoundException("L'utilisateur n'existe pas")
+      throw new NotFoundException("L'utilisateur n'a pas été trouvé dans notre base de donnée")
     }
     return user;
   }
