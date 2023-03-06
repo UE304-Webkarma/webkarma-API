@@ -1,57 +1,29 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from './users.service';
+import { Test } from '@nestjs/testing';
 import { UsersController } from './users.controller';
-import { Users, UsersRepository } from './entities/user.entity';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { UsersService } from './users.service';
 
-const id = 1;
+jest.mock('./users.service');
 
-describe('UserService', () => {
-  let usersController: UsersController;
+describe('UsersService', () => {
   let usersService: UsersService;
-  let usersRepository: UsersRepository;
-  
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UsersService,
-        {
-          provide: getRepositoryToken(Users),
-          useValue: {
-            save: jest.fn(),
-            create: jest.fn(),
-            find: jest.fn(),
-            findOne: jest.fn(),
-            update: jest.fn(),
-            delete: jest.fn()
-          },
-        },
-        UsersRepository
-      ],
+    const moduleRef = await Test.createTestingModule({
+      imports: [],
       controllers: [UsersController],
+      providers: [UsersService],
     }).compile();
 
-    usersService = module.get<UsersService>(UsersService);
-    usersRepository = module.get<UsersRepository>(UsersRepository);
-    usersController = module.get<UsersController>(UsersController);
+    usersService = moduleRef.get<UsersService>(UsersService);
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
-    expect(usersController).toBeDefined();
     expect(usersService).toBeDefined();
-    expect(usersRepository).toBeDefined();
   });
-
-  describe('UserService.create ', () => {
-    it('should return an array of new user', async () => {
-      usersService.create = jest.fn();
-      expect(usersService.create);
-      console.log('Test Service : Should create the user => 201');
-    });
-  });
-
-  describe('UserService.findAll ', () => {
+  
+  /* Find All Users */
+  describe('findAll', () => {
     it('should return an array of users', async () => {
       usersService.findAll = jest.fn();
       expect(usersService.findAll);
@@ -59,7 +31,7 @@ describe('UserService', () => {
     });
   });
 
-  describe('UserService.findOne ', () => {
+  describe('findOne ', () => {
     it('should return an array of the user', async () => {
       usersService.findOne = jest.fn();
       expect(usersService.findOne);
@@ -67,7 +39,15 @@ describe('UserService', () => {
     });
   });
 
-  describe('UserService.update ', () => {
+  describe('create ', () => {
+    it('should return an array of new user', async () => {
+      usersService.create = jest.fn();
+      expect(usersService.create);
+      console.log('Test Service : Should create the user => 201');
+    });
+  });
+
+  describe('update ', () => {
     it('should return status of the modification', async () => {
       usersService.update = jest.fn();
       expect(usersService.update);

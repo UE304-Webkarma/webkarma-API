@@ -1,88 +1,104 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
+import { Users } from './schemas/users.schema';
+import { usersStub } from './stubs/users.stub';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Users, UsersRepository } from './entities/user.entity';
-import { Repository } from 'typeorm';
+
+jest.mock('./users.service');
 
 describe('UsersController', () => {
   let usersController: UsersController;
   let usersService: UsersService;
-  let usersRepository: Repository<Users>;
 
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [],
       controllers: [UsersController],
-      providers: [
-        UsersService,
-        {
-          provide: getRepositoryToken(Users),
-          useValue: {
-            save: jest.fn(),
-            create: jest.fn(),
-            find: jest.fn(),
-            findOne: jest.fn(),
-            update: jest.fn(),
-            delete: jest.fn()
-          },
-        },
-        UsersRepository
-      ]
+      providers: [UsersService],
     }).compile();
 
-    usersController = app.get<UsersController>(UsersController);
-    usersService = app.get<UsersService>(UsersService);
-    usersRepository = app.get<UsersRepository>(UsersRepository);
+    usersController = moduleRef.get<UsersController>(UsersController);
+    usersService = moduleRef.get<UsersService>(UsersService);
+    jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(usersController).toBeDefined();
-    expect(usersService).toBeDefined();
-    expect(usersRepository).toBeDefined();
-  });
-
-  describe('Create a Users', () => {
-    it('should return an array of new user', async () => {
-      const request: any = {
-        firstname: "CreateTest",
-        lastname: "CreateTest"
-      };
-      const data = usersController.create(request);
-      expect(usersController.create(request)).toBe(data);
-      console.log('Test Controller : Should create the user => 201');
+  /* Find All Users */
+  describe('findAll', () => {
+    describe('When findAll is called', () => {
+      let users: Users[];
+      beforeEach(async () => {
+        users = await usersController.findAll();
+      });
+      test('Then it should call usersService', () => {
+        expect(usersService.findAll).toBeCalledWith();
+      });
+      test('Then it should return all user', () => {
+        expect(users).toEqual([usersStub()]);
+      });
     });
   });
 
-  describe('Find all Users', () => {
-    it('should return an array of users', async () => {
-      const data = usersController.findAll();
-      expect(usersController.findAll()).toBe(data);
-      console.log('Test Controller : Should find all users => 200');
-    });
-  });
-  
-  describe('Find one User', () => {
-    it('should return an array of the user', async () => {
-      const data = usersController.findOne('2');
-      expect(usersController.findOne('2')).toBe(data);
-      console.log('Test Controller : Should find one user => 200');
-    });
-  });
-  
-  describe('Update a User', () => {
-    it('should return status of the modification', async () => {
-      const data = usersController.update('2', { lastname: "UpdateTest" });
-      expect(usersController.update('2', { lastname: "UpdateTest" })).toBe(data);
-      console.log('Test Controller : Update a user => 201');
-    });
-  });
-  
-  describe('Delete a User', () => {
-    it('should return status of the deletion', async () => {
-      const data = usersController.remove('2');
-      expect(usersController.remove('2')).toBe(data);
-      console.log('Test Controller : Delete a user => 200');
+  /* Find One User */
+  describe('findOne', () => {
+    describe('When findOne is called', () => {
+      let user: Users;
+      beforeEach(async () => {
+        user = await usersController.findOne(usersStub().id);
+      });
+      test('Then it should call usersService', () => {
+        expect(usersService.findOne).toBeCalledWith(usersStub().id);
+      });
+      test('Then it should return a user', () => {
+        expect(user).toEqual(usersStub());
+      });
     });
   });
 
+  /* Create One User */
+  describe('create', () => {
+    describe('When create is called', () => {
+      let user: Users;
+      beforeEach(async () => {
+        user = await usersController.create(usersStub());
+      });
+      test('Then it should call usersService', () => {
+        expect(usersService.create).toHaveBeenCalledWith(usersStub());
+      });
+      test('Then it should return a user', () => {
+        expect(user).toEqual(usersStub());
+      });
+    });
+  });
+
+  /* Update One User */
+  describe('update', () => {
+    describe('When update is called', () => {
+      let user;
+      beforeEach(async () => {
+        user = await usersController.update(usersStub().id, usersStub());
+      });
+      test('Then it should call usersService', () => {
+        expect(usersService.update).toHaveBeenCalledWith(usersStub().id, usersStub());
+      });
+      test('Then it should return a user', () => {
+        expect(user).toEqual(usersStub());
+      });
+    });
+  });
+
+  /* Delete One User */
+  describe('remove', () => {
+    describe('When remove is called', () => {
+      let user;
+      beforeEach(async () => {
+        user = await usersController.remove(usersStub().id);
+      });
+      test('Then it should call usersService', () => {
+        expect(usersService.remove).toHaveBeenCalledWith(usersStub().id);
+      });
+      test('Then it should return a status', () => {
+        expect(user).toEqual(usersStub());
+      });
+    });
+  });
 });
